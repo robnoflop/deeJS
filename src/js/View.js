@@ -91,7 +91,6 @@ var View = function(){
 	// container for UI ELements
 	this.DJUIRootElement;
 
-
 	// container of images
 	this.ImageContainer = [];
 
@@ -104,7 +103,7 @@ View.prototype.setDelegate = function(_delegate){
 };
 
 
-// inits the view
+// inits the view called by the controller
 View.prototype.initView = function(){
 		// check if delegate was set
 		if(typeof delegate != 'undefined'){
@@ -133,6 +132,8 @@ View.prototype.initView = function(){
 			// calling drawing method
 			this.drawView();
 
+			// add eventlisteners
+			canvas.addEventListener("mousedown", this.processClick.bind(this),false);
 			
 			// call view loaded successfully
 			this.delegate.onloadView();
@@ -178,47 +179,47 @@ View.prototype.addComponents = function(){
 
 
 	// init DJUIObjects
-	var background = new DJUIElement(0,0, canvasWidth, canvasHeight);
+	var background = new DJUIElement("bg",0,0, canvasWidth, canvasHeight);
 	background.backgroundPrim 	=  this.ImageContainer["IMG_bg"];
 
 	// deck bg A
 	// start x = 5% 	width = 35%
 	// start y = 20%	height = 22%
-	var deckABg = new DJUIElement(getX(5),getY(20),getX(35),getY(22));
+	var deckABg = new DJUIElement("deckA",getX(5),getY(20),getX(35),getY(22));
 	deckABg.backgroundPrim  	=	this.ImageContainer["IMG_deckBg"];
 
 
 	// deck bg A
 	// start x = 60% 	width = 35%
 	// start y = 20%	height = 22%
-	var deckBBg = new DJUIElement(getX(100-40),getY(20), getX(35), getY(22));
+	var deckBBg = new DJUIElement("deckB",getX(100-40),getY(20), getX(35), getY(22));
 	deckBBg.backgroundPrim 		=	this.ImageContainer["IMG_deckBg"];
 
 
 
 	// text in boxes
-	var titleTextLeft = new DJUIElementText(getX(4), getY(10), getX(100), getY(10));
+	var titleTextLeft = new DJUIElementText("titleLeft",getX(4), getY(10), getX(100), getY(10));
 	titleTextLeft.textSize  = getX(1.2);
 	titleTextLeft.textColor = canvasSongTitleColor;
 	titleTextLeft.textContent = "Paint it Black"; 
 	deckABg.addChild(titleTextLeft);
 
 
-	var artistTextLeft = new DJUIElementText(getX(4), getY(25), getX(100), getY(10));
+	var artistTextLeft = new DJUIElementText("artistLeft",getX(4), getY(25), getX(100), getY(10));
 	artistTextLeft.textSize  = getX(1);
 	artistTextLeft.textColor = canvasSecColor;
 	artistTextLeft.textContent = "The Rolling stones"; 
 	deckABg.addChild(artistTextLeft);
 
 
-	var timeDisplayLeft = new DJUIElementText(getX(4), getY(63), getX(100), getY(10));
+	var timeDisplayLeft = new DJUIElementText("timeLeft",getX(4), getY(63), getX(100), getY(10));
 	timeDisplayLeft.textSize  = getX(0.7);
 	timeDisplayLeft.textColor = canvasSecColor;
 	timeDisplayLeft.textContent = "0:35 / 2:33"; 
 	deckABg.addChild(timeDisplayLeft);
 
 
-	var bpmDisplayLeft = new DJUIElementText(getX(85.3), getY(10), getX(100), getY(10));
+	var bpmDisplayLeft = new DJUIElementText("bpmLeft",getX(85.3), getY(10), getX(100), getY(10));
 	bpmDisplayLeft.textSize  = getX(1);
 	bpmDisplayLeft.textColor = canvasBPMColor;
 	bpmDisplayLeft.textContent = "120 BPM"; 
@@ -227,28 +228,28 @@ View.prototype.addComponents = function(){
 
 
 	// text in boxes right
-	var titleTextRight = new DJUIElementText(getX(4), getY(10), getX(100), getY(10));
+	var titleTextRight = new DJUIElementText("titleRight",getX(4), getY(10), getX(100), getY(10));
 	titleTextRight.textSize  = getX(1.2);
 	titleTextRight.textColor = canvasSongTitleColor;
 	titleTextRight.textContent = "Paint it Black"; 
 	deckBBg.addChild(titleTextRight);
 
 
-	var artistTextRight = new DJUIElementText(getX(4), getY(25), getX(100), getY(10));
+	var artistTextRight = new DJUIElementText("artistRight",getX(4), getY(25), getX(100), getY(10));
 	artistTextRight.textSize  = getX(1);
 	artistTextRight.textColor = canvasSecColor;
 	artistTextRight.textContent = "The Rolling stones"; 
 	deckBBg.addChild(artistTextRight);
 
 
-	var timeDisplayRight = new DJUIElementText(getX(4), getY(63), getX(100), getY(10));
+	var timeDisplayRight = new DJUIElementText("timeRight",getX(4), getY(63), getX(100), getY(10));
 	timeDisplayRight.textSize  = getX(0.7);
 	timeDisplayRight.textColor = canvasSecColor;
 	timeDisplayRight.textContent = "0:35 / 2:33"; 
 	deckBBg.addChild(timeDisplayRight);
 
 
-	var bpmDisplayRight = new DJUIElementText(getX(85.3), getY(10), getX(100), getY(10));
+	var bpmDisplayRight = new DJUIElementText("bpmRight",getX(85.3), getY(10), getX(100), getY(10));
 	bpmDisplayRight.textSize  = getX(1);
 	bpmDisplayRight.textColor = canvasBPMColor;
 	bpmDisplayRight.textContent = "120 BPM"; 
@@ -256,73 +257,75 @@ View.prototype.addComponents = function(){
 
 
 
-	var syncLeft = new DJUIElementButton(getX(100-12),getY(25), getX(9), getY(12), false);
+	var syncLeft = new DJUIElementButton("syncLeft",getX(100-12),getY(25), getX(9), getY(12), true);
 	syncLeft.backgroundPrim 	= 	this.ImageContainer["IMG_sync_e"];
 	syncLeft.backgroundSec 		= 	this.ImageContainer["IMG_sync_d"];
 
 
-	var syncRight = new DJUIElementButton(getX(100-12),getY(25), getX(9), getY(12), true);
+	var syncRight = new DJUIElementButton("syncRight",getX(100-12),getY(25), getX(9), getY(12), true);
 	syncRight.backgroundPrim 	= 	this.ImageContainer["IMG_sync_e"];
 	syncRight.backgroundSec 	= 	this.ImageContainer["IMG_sync_d"];
 
 
-	var playLeft = new DJUIElementButton(getX(5.5), getY(17), getX(3), getY(2.5), false);
+	var playLeft = new DJUIElementButton("playLeft",getX(5.5), getY(17), getX(3), getY(2.5), false);
 	playLeft.backgroundPrim		=	this.ImageContainer["IMG_play_e"];
 	playLeft.backgroundSec		= 	this.ImageContainer["IMG_play_d"];
 
 
-	var playRight = new DJUIElementButton(getX(55+5.5), getY(17), getX(3), getY(2.5), true);
+	var playRight = new DJUIElementButton("playRight",getX(55+5.5), getY(17), getX(3), getY(2.5), false);
 	playRight.backgroundPrim	=	this.ImageContainer["IMG_play_e"];
 	playRight.backgroundSec		= 	this.ImageContainer["IMG_play_d"];
 
 
-	var stopLeft = new DJUIElementButton(getX(9), getY(17), getX(3), getY(2.5), true);
+	var stopLeft = new DJUIElementButton("stopLeft",getX(9), getY(17), getX(3), getY(2.5), false);
 	stopLeft.backgroundPrim		=	this.ImageContainer["IMG_stop_e"];
 	stopLeft.backgroundSec		= 	this.ImageContainer["IMG_stop_d"];
 
 
-	var stopRight = new DJUIElementButton(getX(55+9), getY(17), getX(3), getY(2.5), false);
+	var stopRight = new DJUIElementButton("stopRight",getX(55+9), getY(17), getX(3), getY(2.5), false);
 	stopRight.backgroundPrim	=	this.ImageContainer["IMG_stop_e"];
 	stopRight.backgroundSec		= 	this.ImageContainer["IMG_stop_d"];
 
 
-	var timelineLeft = new DJUIElementTimeLine(getX(4), getY(100-25), getX(92), getY(10));
-	var timelineRight = new DJUIElementTimeLine(getX(4), getY(100-25), getX(92), getY(10));
+	var timelineLeft = new DJUIElementTimeLine(
+		"timelineLeft",getX(4), getY(100-25), getX(92), getY(10));
+	var timelineRight = new DJUIElementTimeLine(
+		"timelineRight",getX(4), getY(100-25), getX(92), getY(10));
 
 
 	// knobs left
 
-	var knobLeftLow = new DJUIElementKnobN(getX(5), getY(50), getX(6), getY(12));
+	var knobLeftLow = new DJUIElementKnobN("lowLeft",getX(5), getY(50), getX(6), getY(12));
 	knobLeftLow.backgroundPrim 	= 	this.ImageContainer["IMG_knob"];
-	var knobLeftLowLabel = new DJUIElement(getX(14), getY(95), getX(69), getY(23));
+	var knobLeftLowLabel = new DJUIElement("",getX(14), getY(95), getX(69), getY(23));
 	knobLeftLowLabel.backgroundPrim	= this.ImageContainer["IMG_lbl_low"];
 	knobLeftLow.addChild(knobLeftLowLabel);
 
 
-	var knobLeftMid = new DJUIElementKnobN(getX(12), getY(50), getX(6), getY(12));
+	var knobLeftMid = new DJUIElementKnobN("midLeft",getX(12), getY(50), getX(6), getY(12));
 	knobLeftMid.backgroundPrim 	= 	this.ImageContainer["IMG_knob"];
-	var knobLeftMidLabel = new DJUIElement(getX(14), getY(95), getX(69), getY(23));
+	var knobLeftMidLabel = new DJUIElement("",getX(14), getY(95), getX(69), getY(23));
 	knobLeftMidLabel.backgroundPrim	= this.ImageContainer["IMG_lbl_mid"];
 	knobLeftMid.addChild(knobLeftMidLabel);
 
 
-	var knobLeftHigh = new DJUIElementKnobN(getX(19), getY(50), getX(6), getY(12));
+	var knobLeftHigh = new DJUIElementKnobN("highLeft", getX(19), getY(50), getX(6), getY(12));
 	knobLeftHigh.backgroundPrim 	= 	this.ImageContainer["IMG_knob"];
-	var knobLeftHighLabel = new DJUIElement(getX(14), getY(95), getX(69), getY(23));
+	var knobLeftHighLabel = new DJUIElement("",getX(14), getY(95), getX(69), getY(23));
 	knobLeftHighLabel.backgroundPrim	= this.ImageContainer["IMG_lbl_high"];
 	knobLeftHigh.addChild(knobLeftHighLabel);
 
 
-	var knobLeftSpeed = new DJUIElementKnobN(getX(27), getY(50), getX(6), getY(12));
+	var knobLeftSpeed = new DJUIElementKnobN("speedLeft",getX(27), getY(50), getX(6), getY(12));
 	knobLeftSpeed.backgroundPrim 	= 	this.ImageContainer["IMG_knob"];
-	var knobLeftSpeedLabel = new DJUIElement(getX(14), getY(95), getX(69), getY(23));
+	var knobLeftSpeedLabel = new DJUIElement("",getX(14), getY(95), getX(69), getY(23));
 	knobLeftSpeedLabel.backgroundPrim	= this.ImageContainer["IMG_lbl_speed"];
 	knobLeftSpeed.addChild(knobLeftSpeedLabel);
 
 
-	var knobLeftVol = new DJUIElementKnobV(getX(34), getY(50), getX(6), getY(12));
+	var knobLeftVol = new DJUIElementKnobV("volLeft",getX(34), getY(50), getX(6), getY(12));
 	knobLeftVol.backgroundPrim 	= 	this.ImageContainer["IMG_knob"];
-	var knobLeftVolLabel = new DJUIElement(getX(14), getY(95), getX(69), getY(23));
+	var knobLeftVolLabel = new DJUIElement("",getX(14), getY(95), getX(69), getY(23));
 	knobLeftVolLabel.backgroundPrim	= this.ImageContainer["IMG_lbl_vol"];
 	knobLeftVol.addChild(knobLeftVolLabel);
 
@@ -330,75 +333,75 @@ View.prototype.addComponents = function(){
 
 	// right knobs
 
-	var knobRightLow = new DJUIElementKnobN(getX(100-40), getY(50), getX(6), getY(12));
+	var knobRightLow = new DJUIElementKnobN("lowRight",getX(100-40), getY(50), getX(6), getY(12));
 	knobRightLow.backgroundPrim 	= 	this.ImageContainer["IMG_knob"];
-	var knobRightLowLabel = new DJUIElement(getX(14), getY(95), getX(69), getY(23));
+	var knobRightLowLabel = new DJUIElement("",getX(14), getY(95), getX(69), getY(23));
 	knobRightLowLabel.backgroundPrim	= this.ImageContainer["IMG_lbl_low"];
 	knobRightLow.addChild(knobRightLowLabel);
 
 
-	var knobRightMid = new DJUIElementKnobN(getX(100-40+7), getY(50), getX(6), getY(12));
+	var knobRightMid = new DJUIElementKnobN("midRight",getX(100-40+7), getY(50), getX(6), getY(12));
 	knobRightMid.backgroundPrim 	= 	this.ImageContainer["IMG_knob"];
-	var knobRightMidLabel = new DJUIElement(getX(14), getY(95), getX(69), getY(23));
+	var knobRightMidLabel = new DJUIElement("",getX(14), getY(95), getX(69), getY(23));
 	knobRightMidLabel.backgroundPrim	= this.ImageContainer["IMG_lbl_mid"];
 	knobRightMid.addChild(knobRightMidLabel);
 
 
-	var knobRightHigh = new DJUIElementKnobN(getX(100-40+14), getY(50), getX(6), getY(12));
+	var knobRightHigh = new DJUIElementKnobN("highRight",getX(100-40+14), getY(50), getX(6), getY(12));
 	knobRightHigh.backgroundPrim 	= 	this.ImageContainer["IMG_knob"];
-	var knobRightHighLabel = new DJUIElement(getX(14), getY(95), getX(69), getY(23));
+	var knobRightHighLabel = new DJUIElement("",getX(14), getY(95), getX(69), getY(23));
 	knobRightHighLabel.backgroundPrim	= this.ImageContainer["IMG_lbl_high"];
 	knobRightHigh.addChild(knobRightHighLabel);
 
 
-	var knobRightSpeed = new DJUIElementKnobN(getX(100-40+22), getY(50), getX(6), getY(12));
+	var knobRightSpeed = new DJUIElementKnobN("speedRight",getX(100-40+22), getY(50), getX(6), getY(12));
 	knobRightSpeed.backgroundPrim 	= 	this.ImageContainer["IMG_knob"];
-	var knobRightSpeedLabel = new DJUIElement(getX(14), getY(95), getX(69), getY(23));
+	var knobRightSpeedLabel = new DJUIElement("",getX(14), getY(95), getX(69), getY(23));
 	knobRightSpeedLabel.backgroundPrim	= this.ImageContainer["IMG_lbl_speed"];
 	knobRightSpeed.addChild(knobRightSpeedLabel);
 
 
-	var knobRightVol = new DJUIElementKnobV(getX(100-40+29), getY(50), getX(6), getY(12));
+	var knobRightVol = new DJUIElementKnobV("volRight", getX(100-40+29), getY(50), getX(6), getY(12));
 	knobRightVol.backgroundPrim 	= 	this.ImageContainer["IMG_knob"];
-	var knobRightVolLabel = new DJUIElement(getX(14), getY(95), getX(69), getY(23));
+	var knobRightVolLabel = new DJUIElement("",getX(14), getY(95), getX(69), getY(23));
 	knobRightVolLabel.backgroundPrim	= this.ImageContainer["IMG_lbl_vol"];
 	knobRightVol.addChild(knobRightVolLabel);
 
 
 	// crossfade
-	var crossfadeBG = new DJUIElementCFade(getX(44.5), getY(55), getX(11), getY(2));
+	var crossfadeBG = new DJUIElementCFade("crossfade",getX(44.5), getY(55), getX(11), getY(2));
 	crossfadeBG.backgroundPrim 		= 	this.ImageContainer["IMG_cf_bg"];
 	crossfadeBG.backgroundSec		= 	this.ImageContainer["IMG_cf_btn"];
-	var crossfadeLabel = new DJUIElement(getX(18), getY(330), getX(64), getY(140));
+	var crossfadeLabel = new DJUIElement("",getX(18), getY(330), getX(64), getY(140));
 	crossfadeLabel.backgroundPrim 	= 	this.ImageContainer["IMG_lbl_cf"];
 	crossfadeBG.addChild(crossfadeLabel);
 
 
 	// VU meter
-	var VULeft	= new DJUIElementVUMeter(getX(49.2),getY(82),getX(0.6),getY(9.5));
-	var VURight = new DJUIElementVUMeter(getX(50.2),getY(82),getX(0.6),getY(9.5));
+	var VULeft	= new DJUIElementVUMeter("VULeft", getX(49.2),getY(82),getX(0.6),getY(9.5));
+	var VURight = new DJUIElementVUMeter("VURight", getX(50.2),getY(82),getX(0.6),getY(9.5));
 
 
 	// delay
-	var knobDelay = new DJUIElementKnobV(getX(42), getY(77.5), getX(6), getY(12));
+	var knobDelay = new DJUIElementKnobV("delay", getX(42), getY(77.5), getX(6), getY(12));
 	knobDelay.backgroundPrim 	= 	this.ImageContainer["IMG_knob"];	
-	var knobDelayLabel = new DJUIElement(getX(14), getY(95), getX(69), getY(23));
+	var knobDelayLabel = new DJUIElement("", getX(14), getY(95), getX(69), getY(23));
 	knobDelayLabel.backgroundPrim	= this.ImageContainer["IMG_lbl_delay"];
 	knobDelay.addChild(knobDelayLabel);
 
 
 	// vol total
-	var knobTotVol = new DJUIElementKnobV(getX(52), getY(77.5), getX(6), getY(12));
+	var knobTotVol = new DJUIElementKnobV("volTot", getX(52), getY(77.5), getX(6), getY(12));
 	knobTotVol.backgroundPrim 	= 	this.ImageContainer["IMG_knob"];	
-	var knobTotVolLabel = new DJUIElement(getX(14), getY(95), getX(69), getY(23));
+	var knobTotVolLabel = new DJUIElement("", getX(14), getY(95), getX(69), getY(23));
 	knobTotVolLabel.backgroundPrim	= this.ImageContainer["IMG_lbl_delay"];
 	knobTotVol.addChild(knobTotVolLabel);
 
 
 
 	// learn popover
-	var popover = new DJUIElementPopover(0,0, canvasWidth, canvasHeight);
-	var popoverText = new DJUIElementText(getX(35), getY(50), getX(30), getY(20));
+	var popover = new DJUIElementPopover("popover",0,0, canvasWidth, canvasHeight);
+	var popoverText = new DJUIElementText("popoverText",getX(35), getY(50), getX(30), getY(20));
 	popoverText.textContent ="Move Controler Element to assign";
 	popoverText.textSize = getX(2);
 	popoverText.textColor = canvasSecColor;
@@ -438,9 +441,6 @@ View.prototype.addComponents = function(){
 	// add to root element
 	this.DJUIRootElement = background;
 }
-
-
-
 
 
 //draws the view
@@ -625,8 +625,6 @@ View.prototype.drawView = function(){
 			}else{
 				return;
 			}
-				
-			
 		}
 
 		for(var i = 0 ; i < element.children.length ; i++){
@@ -634,16 +632,102 @@ View.prototype.drawView = function(){
 		}
 	}
 	drawUIElement(this, this.DJUIRootElement);
+}
+
+
+// processes an click event
+View.prototype.processClick = function(event){
+	var bounds = event.target.getBoundingClientRect();
+	if(bounds === undefined || event.pageX ===undefined || !event.pageY===undefined){
+		this.delegate.receivedError(
+			new Error("ProcessClick: Various functions are not supported by this browser.")
+		);
+		return;
+	}
+
+	// clik pos relative to canvas 
+	var clickX = event.clientX - bounds.left;// bounds.left;
+	var clickY = event.clientY - bounds.top; // top
+
+
+	// recursivly go through all UI Elements
+	var clickedObject;
+
+	// scan recursivly
+	function scan(view,x,y, element){
+		//console.log("x: "+x+" y: "+y);
+		//console.log(element);
+
+		if(
+			(x >= element.x && x <= element.x + element.width) &&
+			(y >= element.y && y <= element.y + element.height) &&
+			(element.visible == true || element.visible === undefined)
+		){
+			if(element.receivesClickEvent){
+				clickedObject = element;
+				return;
+			}				
+		}else{
+			return;
+		}
+		for(var i = 0 ; i < element.children.length ; i++){
+			scan(view,x,y, element.children[i]);			
+		}
+	}
+	scan(this,clickX, clickY, this.DJUIRootElement);
+
+	// if no UIObj could be found stop here
+	if(clickedObject=== undefined || clickedObject == null)
+		return;
+
+	// perform task
+	if(clickedObject instanceof DJUIElementButton)
+		this.delegate.btnClicked(clickedObject);
+	else if (clickedObject instanceof DJUIElementTimeLine) {
+		// new value based on clicked pos
+		var value = (clickX-clickedObject.x) / clickedObject.width;
+		clickedObject.setValue(value);
+		this.delegate.timelineCurserMoved(clickedObject);
+	}
+
+
+
+	this.drawView();
+}
+
+
+// returns an UIELement by name
+View.prototype.getUIElement = function(name){
+	if(name===undefined || name==="")
+		this.delegate.receivedError(
+			new Error("getUIElement: name must have an value")
+		);
+	else{
+
+		var foundElement;
+
+		function traverse(element){
+			if(element.UIName === name){
+				foundElement = element;
+				return;
+			}				
+
+			for(var i =0 ; i< element.children.length; i++)
+				traverse(element.children[i]);
+		}
+		traverse(this.DJUIRootElement);
+		return foundElement;
+
+	}
+	return null;
+
 
 }
 
 
 
-
-
-
 // Is an basic ui element that holds useful information
-var DJUIElement = function(x, y, width, height){
+var DJUIElement = function(name,x, y, width, height){
 	this.x = x || 0;
 	this.y = y || 0;
 	this.width = width || 0;
@@ -651,6 +735,8 @@ var DJUIElement = function(x, y, width, height){
 	this.children = [];
 	this.backgroundPrim;
 	this.UIType;
+	this.UIName = name;
+	this.receivesClickEvent = false;
 }
 
 // adds the child and updates pos koordinates
@@ -678,12 +764,13 @@ DJUIElement.prototype.getBackground = function(){
 
 
 // Constructor of KNOB UI ELEMENT
-function DJUIElementKnobN(x, y, width, height) {
+function DJUIElementKnobN(name, x, y, width, height) {
 
-  DJUIElement.call(this, x, y, width, height);
+  DJUIElement.call(this,name, x, y, width, height);
 
   this.UIType ="knobneutral";
   this.value = 0;
+  this.receivesClickEvent = true;
 }
 
 DJUIElementKnobN.prototype = Object.create(DJUIElement.prototype); 
@@ -691,7 +778,7 @@ DJUIElementKnobN.prototype.constructor = DJUIElementKnobN;
 
 
 DJUIElementKnobN.prototype.setValue = function(value){
-	this.value = min(max(-1,value),1);
+	this.value = Math.min(Math.max(-1,value),1);
 }
 
 DJUIElementKnobN.prototype.getValue = function(){
@@ -709,12 +796,13 @@ DJUIElementKnobN.prototype.getValue = function(){
 
 
 // Constructor of KNOB UI ELEMENT
-function DJUIElementKnobV(x, y, width, height) {
+function DJUIElementKnobV(name,x, y, width, height) {
 
-  DJUIElement.call(this, x, y, width, height);
+  DJUIElement.call(this, name, x, y, width, height);
 
   this.UIType ="knobvolume";
   this.value = 0.5;
+  this.receivesClickEvent = true;
 }
 
 DJUIElementKnobV.prototype = Object.create(DJUIElement.prototype); 
@@ -722,7 +810,7 @@ DJUIElementKnobV.prototype.constructor = DJUIElementKnobV;
 
 
 DJUIElementKnobV.prototype.setValue = function(value){
-	this.value = min(max(0,value),1);
+	this.value = Math.min(Math.max(0,value),1);
 }
 
 DJUIElementKnobV.prototype.getValue = function(){
@@ -744,13 +832,14 @@ DJUIElementKnobV.prototype.getValue = function(){
 
 
 // Constructor of Button UI ELEMENT
-function DJUIElementButton(x, y, width, height, active) {
+function DJUIElementButton(name,x, y, width, height, active) {
 
-  DJUIElement.call(this, x, y, width, height);
+  DJUIElement.call(this, name, x, y, width, height);
 
   
   this.active = active || false;
   this.backgroundSec;
+  this.receivesClickEvent = true;
 }
 
 DJUIElementButton.prototype = Object.create(DJUIElement.prototype); 
@@ -777,12 +866,13 @@ DJUIElementButton.prototype.getBackground = function(){
 
 
 // Constructor of Crossfade UI ELEMENT
-function DJUIElementCFade(x, y, width, height) {
+function DJUIElementCFade(name, x, y, width, height) {
 
-  DJUIElement.call(this, x, y, width, height);
+  DJUIElement.call(this, name, x, y, width, height);
   this.value = 0;
   this.backgroundSec;
   this.UIType ="crossfade";
+  this.receivesClickEvent = true;
 }
 
 DJUIElementCFade.prototype = Object.create(DJUIElement.prototype); 
@@ -806,7 +896,7 @@ DJUIElementCFade.prototype.getValue = function(){
 
 // sets the value -1..1
 DJUIElementCFade.prototype.setValue = function(val){
-	this.value = min(-1,max(1,val));
+	this.value = Math.min(-1,Math.max(1,val));
 }
 
 
@@ -819,20 +909,21 @@ DJUIElementCFade.prototype.setValue = function(val){
 
 
 // Constructor of Button UI ELEMENT
-function DJUIElementTimeLine(x, y, width, height) {
+function DJUIElementTimeLine(name, x, y, width, height) {
 
-  DJUIElement.call(this, x, y, width, height);
+  DJUIElement.call(this, name, x, y, width, height);
 
   
   this.value = 0.0;
   this.UIType ="timeline";
+  this.receivesClickEvent = true;
 }
 
 DJUIElementTimeLine.prototype = Object.create(DJUIElement.prototype); 
 DJUIElementTimeLine.prototype.constructor = DJUIElementTimeLine;
 
 DJUIElementTimeLine.prototype.setValue = function(value){
-	this.value = min(max(0,value),1);
+	this.value = Math.min(Math.max(0,value),1);
 }
 
 DJUIElementTimeLine.prototype.getValue = function(){
@@ -851,9 +942,9 @@ DJUIElementTimeLine.prototype.getValue = function(){
 
 
 // Constructor of Button UI ELEMENT
-function DJUIElementVUMeter(x, y, width, height) {
+function DJUIElementVUMeter(name, x, y, width, height) {
 
-  DJUIElement.call(this, x, y, width, height);
+  DJUIElement.call(this, name, x, y, width, height);
 
   
   this.value = 0.3;
@@ -864,7 +955,7 @@ DJUIElementVUMeter.prototype = Object.create(DJUIElement.prototype);
 DJUIElementVUMeter.prototype.constructor = DJUIElementVUMeter;
 
 DJUIElementVUMeter.prototype.setValue = function(value){
-	this.value = min(max(0,value),1);
+	this.value = Math.min(Math.max(0,value),1);
 }
 
 DJUIElementVUMeter.prototype.getValue = function(){
@@ -883,9 +974,9 @@ DJUIElementVUMeter.prototype.getValue = function(){
 
 
 // Constructor of Button UI ELEMENT
-function DJUIElementText(x, y, width, height) {
+function DJUIElementText(name, x, y, width, height) {
 
-  DJUIElement.call(this, x, y, width, height);
+  DJUIElement.call(this, name, x, y, width, height);
 
   this.textContent;
   this.textSize;
@@ -904,11 +995,12 @@ DJUIElementText.prototype.constructor = DJUIElementText;
 
 
 // Constructor of Button UI ELEMENT
-function DJUIElementPopover(x, y, width, height) {
+function DJUIElementPopover(name, x, y, width, height) {
 
-  DJUIElement.call(this, x, y, width, height);
+  DJUIElement.call(this, name, x, y, width, height);
   this.visible = false;
   this.UIType ="popover";
+  this.receivesClickEvent = true;
 }
 
 DJUIElementPopover.prototype = Object.create(DJUIElement.prototype); 

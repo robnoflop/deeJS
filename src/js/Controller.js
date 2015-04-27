@@ -42,6 +42,21 @@ Controller.prototype.onloadView = function(){
 }
 
 
+// called when a UIElement of type Button was clicked
+Controller.prototype.btnClicked = function(obj){
+	console.log("Button clicked: "+obj.UIName);
+	obj.active = !obj.active;
+}
+
+
+// called when timeline curser was moved
+Controller.prototype.timelineCurserMoved = function(obj){
+	console.log("curser of "+obj.UIName+" was moved to pos "+ obj.getValue());
+}
+
+
+
+
 
 // Called when an audio path has been changed
 Controller.prototype.audioPathChanged = function(arg){
@@ -52,6 +67,12 @@ Controller.prototype.audioPathChanged = function(arg){
 	}
 }
 
+
+// Error
+Controller.prototype.receivedError = function(error){
+	// received any error
+	//console.log(error.getMessage());
+}
 
 // Called when there was an error loading the view
 Controller.prototype.errorLoadingView = function(error){
