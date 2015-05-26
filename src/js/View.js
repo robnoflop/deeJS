@@ -5,7 +5,7 @@
 /** 
  * Set the Width of the canvas
  */
-var canvasWidth = 1530;
+var canvasWidth = 1280;
 
 
 /** 
@@ -66,8 +66,16 @@ var canvasVUActive = '#ff3451';
 var canvasVUInactive = '#3e161b';
 
 
+/**
+* Song default name
+*/
+var canvasSongTitleDefault ="Drop song";
 
 
+/**
+* Artist default name
+*/
+var canvasArtistDefault = "here"
 
 
 
@@ -133,7 +141,14 @@ View.prototype.initView = function(){
 			this.drawView();
 
 			// add eventlisteners
-			canvas.addEventListener("mousedown", this.processClick.bind(this),false);
+			canvas.addEventListener('mousedown', this.processMousedown.bind(this),false);			
+			canvas.addEventListener('drop', this.handleDrop.bind(this), false);
+			canvas.addEventListener('dragover', this.handleDragOver.bind(this), false);
+			canvas.addEventListener('contextmenu',this.handleContext.bind(this),false);
+
+
+
+
 			
 			// call view loaded successfully
 			this.delegate.onloadView();
@@ -201,28 +216,28 @@ View.prototype.addComponents = function(){
 	var titleTextLeft = new DJUIElementText("titleLeft",getX(4), getY(10), getX(100), getY(10));
 	titleTextLeft.textSize  = getX(1.2);
 	titleTextLeft.textColor = canvasSongTitleColor;
-	titleTextLeft.textContent = "Paint it Black"; 
+	titleTextLeft.textContent = canvasSongTitleDefault; 
 	deckABg.addChild(titleTextLeft);
 
 
 	var artistTextLeft = new DJUIElementText("artistLeft",getX(4), getY(25), getX(100), getY(10));
 	artistTextLeft.textSize  = getX(1);
 	artistTextLeft.textColor = canvasSecColor;
-	artistTextLeft.textContent = "The Rolling stones"; 
+	artistTextLeft.textContent = canvasArtistDefault; 
 	deckABg.addChild(artistTextLeft);
 
 
 	var timeDisplayLeft = new DJUIElementText("timeLeft",getX(4), getY(63), getX(100), getY(10));
 	timeDisplayLeft.textSize  = getX(0.7);
 	timeDisplayLeft.textColor = canvasSecColor;
-	timeDisplayLeft.textContent = "0:35 / 2:33"; 
+	timeDisplayLeft.textContent = "-:-- / -:--"; 
 	deckABg.addChild(timeDisplayLeft);
 
 
 	var bpmDisplayLeft = new DJUIElementText("bpmLeft",getX(85.3), getY(10), getX(100), getY(10));
 	bpmDisplayLeft.textSize  = getX(1);
 	bpmDisplayLeft.textColor = canvasBPMColor;
-	bpmDisplayLeft.textContent = "120 BPM"; 
+	bpmDisplayLeft.textContent = "- - - BPM"; 
 	deckABg.addChild(bpmDisplayLeft);
 
 
@@ -231,28 +246,28 @@ View.prototype.addComponents = function(){
 	var titleTextRight = new DJUIElementText("titleRight",getX(4), getY(10), getX(100), getY(10));
 	titleTextRight.textSize  = getX(1.2);
 	titleTextRight.textColor = canvasSongTitleColor;
-	titleTextRight.textContent = "Paint it Black"; 
+	titleTextRight.textContent = canvasSongTitleDefault; 
 	deckBBg.addChild(titleTextRight);
 
 
 	var artistTextRight = new DJUIElementText("artistRight",getX(4), getY(25), getX(100), getY(10));
 	artistTextRight.textSize  = getX(1);
 	artistTextRight.textColor = canvasSecColor;
-	artistTextRight.textContent = "The Rolling stones"; 
+	artistTextRight.textContent = canvasArtistDefault; 
 	deckBBg.addChild(artistTextRight);
 
 
 	var timeDisplayRight = new DJUIElementText("timeRight",getX(4), getY(63), getX(100), getY(10));
 	timeDisplayRight.textSize  = getX(0.7);
 	timeDisplayRight.textColor = canvasSecColor;
-	timeDisplayRight.textContent = "0:35 / 2:33"; 
+	timeDisplayRight.textContent = "-:-- / -:--"; 
 	deckBBg.addChild(timeDisplayRight);
 
 
 	var bpmDisplayRight = new DJUIElementText("bpmRight",getX(85.3), getY(10), getX(100), getY(10));
 	bpmDisplayRight.textSize  = getX(1);
 	bpmDisplayRight.textColor = canvasBPMColor;
-	bpmDisplayRight.textContent = "120 BPM"; 
+	bpmDisplayRight.textContent = "- - - BPM"; 
 	deckBBg.addChild(bpmDisplayRight);
 
 
@@ -385,6 +400,7 @@ View.prototype.addComponents = function(){
 	// delay
 	var knobDelay = new DJUIElementKnobV("delay", getX(42), getY(77.5), getX(6), getY(12));
 	knobDelay.backgroundPrim 	= 	this.ImageContainer["IMG_knob"];	
+	knobDelay.setValue(0);
 	var knobDelayLabel = new DJUIElement("", getX(14), getY(95), getX(69), getY(23));
 	knobDelayLabel.backgroundPrim	= this.ImageContainer["IMG_lbl_delay"];
 	knobDelay.addChild(knobDelayLabel);
@@ -394,7 +410,7 @@ View.prototype.addComponents = function(){
 	var knobTotVol = new DJUIElementKnobV("volTot", getX(52), getY(77.5), getX(6), getY(12));
 	knobTotVol.backgroundPrim 	= 	this.ImageContainer["IMG_knob"];	
 	var knobTotVolLabel = new DJUIElement("", getX(14), getY(95), getX(69), getY(23));
-	knobTotVolLabel.backgroundPrim	= this.ImageContainer["IMG_lbl_delay"];
+	knobTotVolLabel.backgroundPrim	= this.ImageContainer["IMG_lbl_vol"];
 	knobTotVol.addChild(knobTotVolLabel);
 
 
@@ -635,12 +651,169 @@ View.prototype.drawView = function(){
 }
 
 
-// processes an click event
-View.prototype.processClick = function(event){
-	var bounds = event.target.getBoundingClientRect();
-	if(bounds === undefined || event.pageX ===undefined || !event.pageY===undefined){
+// gets the specific deck where a soundfile was dropped
+View.prototype.getDeckFromDND = function(eventArgs){
+	var bounds = eventArgs.target.getBoundingClientRect();
+	if(bounds === undefined || eventArgs.clientX ===undefined || eventArgs.clientY===undefined){
 		this.delegate.receivedError(
-			new Error("ProcessClick: Various functions are not supported by this browser.")
+			new Error("DragOver: Various functions are not supported by this browser.")
+		);
+		return;
+	}
+
+	// clik pos relative to canvas 
+	var dragX = eventArgs.clientX - bounds.left;// bounds.left;
+	var dragY = eventArgs.clientY - bounds.top; // top
+
+
+	// show this is a copy and detect hover
+	var deckA = this.getUIElement("deckA");
+	var deckB = this.getUIElement("deckB");
+	
+	if (deckA.x < dragX && deckA.x+deckA.width > dragX &&
+		deckA.y < dragY && deckA.y+deckA.height> dragY) {
+		return deckA;	
+
+	}else if (deckB.x < dragX && deckB.x+deckB.width > dragX &&
+		      deckB.y < dragY && deckB.y+deckB.height> dragY) {
+		return deckB;
+	}
+	return null;
+}
+
+
+// processes rightclick to learn new midi
+View.prototype.handleContext = function(event){
+	event.preventDefault();
+
+	var bounds = event.target.getBoundingClientRect();
+	if(bounds === undefined || event.clientX ===undefined || event.clientY===undefined){
+		this.delegate.receivedError(
+			new Error("HandleContext: Various functions are not supported by this browser.")
+		);
+		return;
+	}
+
+	// clik pos relative to canvas 
+	var clickX = event.clientX - bounds.left;// bounds.left;
+	var clickY = event.clientY - bounds.top; // top
+
+
+	// recursivly go through all UI Elements
+	var clickedObject;
+
+	// scan recursivly
+	function scan(view,x,y, element){
+		//console.log("x: "+x+" y: "+y);
+		//console.log(element);
+
+		if(
+			(x >= element.x && x <= element.x + element.width) &&
+			(y >= element.y && y <= element.y + element.height) &&
+			(element.visible == true || element.visible === undefined ) 
+		){
+			if(element.receivesClickEvent && element.midiControl){
+				clickedObject = element;
+				return;
+			}				
+		}else{
+			return;
+		}
+		for(var i = 0 ; i < element.children.length ; i++){
+			scan(view,x,y, element.children[i]);			
+		}
+	}
+	scan(this,clickX, clickY, this.DJUIRootElement);
+
+	// if no UIObj could be found stop here
+	if(clickedObject=== undefined || clickedObject == null)
+		return;
+
+	// provide event listener function with references
+	// var eventHelperObject = {
+	// 	"clickX": clickX,
+	// 	"clickY": clickY,
+	// 	"clickedObject" : clickedObject,
+	// 	"view" : this
+	// }
+
+	this.delegate.midiLearn(clickedObject);
+
+	this.drawView();
+
+
+
+}
+
+
+//  handles drop file
+View.prototype.handleDrop = function(event){
+	event.stopPropagation();
+	event.preventDefault();
+
+	var deck = this.getDeckFromDND(event);
+	if(deck !==null){
+		var files = event.dataTransfer.files; 
+
+		// validate
+		if(files.length > 1){
+			this.delegate.receivedError(
+				new Error("Only drop one file!")
+			);
+			return;
+		}
+
+		var file = files[0];
+
+		if(!file.type.match("audio.*")){
+			this.delegate.receivedError(
+				new Error("Only drop audio files!")
+			);
+			return;
+		}
+
+		var reader = new FileReader();
+
+		// Closure to capture the file information.
+      	reader.onload = (function(theFile,delegate, deck) {
+        	return function(e) {
+        		delegate.audioSourceChanged(
+        			deck, 
+        			e.target.result, 
+        			escape(theFile.name)
+        		);
+        	};
+      	})(file,this.delegate, deck).bind(this.delegate);
+
+      	reader.readAsDataURL(file);
+      	this.delegate.startLoadingAudio(escape(file.name));
+
+	}
+}
+
+
+
+// Handle file dragover
+View.prototype.handleDragOver = function(event){
+	event.stopPropagation();
+	event.preventDefault();
+
+	if(this.getDeckFromDND(event)!==null)
+		event.dataTransfer.dropEffect = 'copy';	
+}
+
+// processes an click event
+View.prototype.processMousedown = function(event){
+
+	// prevent right click
+	if(event.which===3)
+		return;
+
+
+	var bounds = event.target.getBoundingClientRect();
+	if(bounds === undefined || event.clientX ===undefined || event.clientY===undefined){
+		this.delegate.receivedError(
+			new Error("ProcessMousedown: Various functions are not supported by this browser.")
 		);
 		return;
 	}
@@ -680,20 +853,96 @@ View.prototype.processClick = function(event){
 	if(clickedObject=== undefined || clickedObject == null)
 		return;
 
-	// perform task
-	if(clickedObject instanceof DJUIElementButton)
-		this.delegate.btnClicked(clickedObject);
-	else if (clickedObject instanceof DJUIElementTimeLine) {
-		// new value based on clicked pos
-		var value = (clickX-clickedObject.x) / clickedObject.width;
-		clickedObject.setValue(value);
-		this.delegate.timelineCurserMoved(clickedObject);
+	// provide event listener function with references
+	var eventHelperObject = {
+		"clickX": clickX,
+		"clickY": clickY,
+		"clickedObject" : clickedObject,
+		"view" : this
 	}
 
+	// MouseDown on Button
+	if(clickedObject instanceof DJUIElementButton){
+		this.delegate.btnClicked(clickedObject);
+	}
+	// MouseDown on Timeline
+	else if (clickedObject instanceof DJUIElementTimeLine ||
+			 clickedObject instanceof DJUIElementCFade) {
 
+		var handler = this.processMousemove.bind(eventHelperObject);
+
+		// add mousemove and mouseup listener
+		document.addEventListener("mousemove",handler);
+		document.addEventListener("mouseup",function(){
+			//handler(evt);
+			document.removeEventListener("mousemove", handler);
+			document.removeEventListener("mouseup", function(){});				
+		});
+	}
+	// MouseDown on Knobs
+	else if (clickedObject.UIType === "knobneutral" ||
+			clickedObject.UIType === "knobvolume") {
+		eventHelperObject["oldValue"] = clickedObject.getValue();
+		var handler = this.processMousemove.bind(eventHelperObject);
+		// add mousemove and mouseup listener
+		document.addEventListener("mousemove",handler);
+		document.addEventListener("mouseup",function(){
+			document.removeEventListener("mousemove", handler);
+			document.removeEventListener("mouseup", function(){});
+		});
+	}else if(clickedObject.UIType === "popover"){
+		// send to delegate
+		eventHelperObject["view"].delegate.clickOnPopover();
+	}
 
 	this.drawView();
 }
+
+
+
+// will be added when timeline cursor moves and deleted when mouse released
+View.prototype.processMousemove = function(event){
+	var clickedObject = this["clickedObject"];
+	var bounds = event.target.getBoundingClientRect();
+	var clickCurrX = event.clientX - bounds.left;
+	var clickCurrY = event.clientY - bounds.top;
+
+
+	if(clickedObject.UIType === "knobneutral" ||
+		clickedObject.UIType === "knobvolume"){
+		var oldValue = this["oldValue"];
+		var clickY = this["clickY"];
+		var moveDiff = -(clickCurrY-clickY)/canvasHeight*300;
+		clickedObject.setValue(
+			oldValue + 
+			moveDiff/clickedObject.height
+		);
+
+		// send to delegate
+		this["view"].delegate.knobValueChanged(clickedObject);
+
+	}else if(clickedObject.UIType === "timeline"){
+		var clickX = this["clickX"];
+		var moveDiff = clickCurrX-clickX;
+		clickedObject.setValue((clickX-clickedObject.x+moveDiff) / clickedObject.width);
+
+		// send to delegate
+		this["view"].delegate.timelineCurserMoved(clickedObject);
+	}else if(clickedObject.UIType === "crossfade"){
+		var clickX = this["clickX"];
+		var moveDiff = clickCurrX-clickX;
+		clickedObject.setValue((clickX-clickedObject.x+moveDiff) / clickedObject.width*2-1);
+		
+		// send to delegate
+		this["view"].delegate.crossfadeCurserMoved(clickedObject);
+	}
+
+
+	this["view"].drawView();
+}
+
+
+
 
 
 // returns an UIELement by name
@@ -737,6 +986,7 @@ var DJUIElement = function(name,x, y, width, height){
 	this.UIType;
 	this.UIName = name;
 	this.receivesClickEvent = false;
+	this.midiControl = false;
 }
 
 // adds the child and updates pos koordinates
@@ -771,6 +1021,7 @@ function DJUIElementKnobN(name, x, y, width, height) {
   this.UIType ="knobneutral";
   this.value = 0;
   this.receivesClickEvent = true;
+  this.midiControl = true;
 }
 
 DJUIElementKnobN.prototype = Object.create(DJUIElement.prototype); 
@@ -803,6 +1054,7 @@ function DJUIElementKnobV(name,x, y, width, height) {
   this.UIType ="knobvolume";
   this.value = 0.5;
   this.receivesClickEvent = true;
+  this.midiControl = true;
 }
 
 DJUIElementKnobV.prototype = Object.create(DJUIElement.prototype); 
@@ -840,6 +1092,7 @@ function DJUIElementButton(name,x, y, width, height, active) {
   this.active = active || false;
   this.backgroundSec;
   this.receivesClickEvent = true;
+  this.midiControl = true;
 }
 
 DJUIElementButton.prototype = Object.create(DJUIElement.prototype); 
@@ -873,6 +1126,7 @@ function DJUIElementCFade(name, x, y, width, height) {
   this.backgroundSec;
   this.UIType ="crossfade";
   this.receivesClickEvent = true;
+  this.midiControl = true;
 }
 
 DJUIElementCFade.prototype = Object.create(DJUIElement.prototype); 
@@ -896,7 +1150,7 @@ DJUIElementCFade.prototype.getValue = function(){
 
 // sets the value -1..1
 DJUIElementCFade.prototype.setValue = function(val){
-	this.value = Math.min(-1,Math.max(1,val));
+	this.value = Math.min(1,Math.max(-1,val));
 }
 
 
@@ -947,7 +1201,7 @@ function DJUIElementVUMeter(name, x, y, width, height) {
   DJUIElement.call(this, name, x, y, width, height);
 
   
-  this.value = 0.3;
+  this.value = 0.0;
   this.UIType ="VUMeter";
 }
 

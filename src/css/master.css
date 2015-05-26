@@ -20,16 +20,44 @@ body{
 	margin: 0 auto;
 }
 
-.center-content{
+.centerContent{
 	text-align: center;
 }
 
+.midScreen{
+	margin:0 auto;
+	top:50%;
+	left: 40%;
+	width: 20%;
+	height: 5%;
+	position: absolute;
+}
+
+.darkPopover{
+	top:0;
+	margin:0;
+	background-color: rgba(0,0,0,0.85);
+	position: absolute;
+	width: 100%;
+	height: 100%;
+}
 
 
+.textMid{
+	font-size: 1.5em;
+}
 
+.bold{
+	font-weight: bold;
+}
 
+.textColorBlue{
+	color: #5FD7FF;
+}
 
-
+.displayNone{
+	display:none;
+}
 
 
 /* POPOVER IF NOSCRIPT */

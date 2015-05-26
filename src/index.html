@@ -6,6 +6,7 @@
 		    <link rel="icon" href="img/favicon.ico">
 		    <link rel="stylesheet" type="text/css" href="css/master.css">
 		    <script type="text/javascript" src="js/View.js"></script>
+		    <script type="text/javascript" src="js/Midi.js"></script>
 		    <script type="text/javascript" src="js/Controller.js"></script>
 	    </head>
 	    <body>
@@ -15,11 +16,11 @@
 				</div>
 			</noscript>
 
-			<div class="center-content topSpace2">
+			<div class="centerContent topSpace2">
 	    		<canvas id="canvas"></canvas>
 	    	</div>
 
-	    	<div id="ImagePreloader" style="display:none;">
+	    	<div id="ImagePreloader" class="displayNone">
 	    		<img id="IMG_bg" 		src="img/appimg/bg.png">
 				<img id="IMG_deckBg" 	src="img/appimg/deckBG.png">
 				<img id="IMG_knob" 		src="img/appimg/knob.png">
@@ -39,6 +40,17 @@
 				<img id="IMG_cf_bg" 	src="img/appimg/crossfadeBg.png">
 				<img id="IMG_cf_btn" 	src="img/appimg/crossfadeBtn.png">
 	    	</div>
+
+	    	<!-- absolute elements -->
+	    	<div id="popoverLoading" class="darkPopover">
+	    		<div id="popoverLoadingText" class="centerContent midScreen centerContent textMid bold textColorBlue">
+	    			Loading deeJS ...
+	    		</div>
+	    	</div>
+
+
+	    	<audio id="audioDeckA"></audio>
+	    	<audio id="audioDeckB"></audio>
 	    </body>
     </html>
 
