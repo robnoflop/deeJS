@@ -453,6 +453,8 @@ View.prototype.addComponents = function(){
 	background.addChild(deckBBg);
 	background.addChild(popover);
 
+	
+
 
 	// add to root element
 	this.DJUIRootElement = background;
@@ -461,7 +463,6 @@ View.prototype.addComponents = function(){
 
 //draws the view
 View.prototype.drawView = function(){
-
 
 	// recursivly draw all UI Elements
 	function drawUIElement(view, element){	
@@ -772,7 +773,7 @@ View.prototype.handleDrop = function(event){
 			return;
 		}
 
-		var reader = new FileReader();
+		/*var reader = new FileReader();
 
 		// Closure to capture the file information.
       	reader.onload = (function(theFile,delegate, deck) {
@@ -785,8 +786,8 @@ View.prototype.handleDrop = function(event){
         	};
       	})(file,this.delegate, deck).bind(this.delegate);
 
-      	reader.readAsDataURL(file);
-      	this.delegate.startLoadingAudio(escape(file.name));
+      	reader.readAsArrayBuffer(file);*/
+      	this.delegate.startLoadingAudio(deck.UIName ,file);
 
 	}
 }

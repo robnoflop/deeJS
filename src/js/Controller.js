@@ -32,7 +32,9 @@ var Controller = function(){
 	// wire view
 	this.view = new View();
 	this.view.setDelegate(this);
-	this.view.initView();	
+	this.view.initView();
+
+	this.engin = new deeEngin(this);
 
 	// wire midi interface
 	this.midi = new Midi();	
@@ -60,13 +62,23 @@ Controller.prototype.onloadView = function(){
 	}
 
 	popover.style.display = "none";
-
 }
 
 
 // called when a UIElement of type Button was clicked
 Controller.prototype.btnClicked = function(obj){
-	console.log("Button clicked: "+obj.UIName);
+	//console.log("Button clicked: "+obj.UIName);
+	if(obj.UIName == "playLeft" || obj.UIName == "stopLeft") {
+		this.engin.startStopLeft();
+	} else if (obj.UIName == "playRight" || obj.UIName == "stopRight") {
+		this.engin.startStopRight();
+	} else if(obj.UIName == "syncLeft") {
+		this.engin.syncLeft();
+		this.view.getUIElement("bpmLeft").textContent = this.engin.BPMLeft + "BPM";
+	} else if (obj.UIName == "syncRight") {
+		this.engin.syncRight();
+		this.view.getUIElement("bpmRight").textContent = this.engin.BPMRight + "BPM";
+	}
 	obj.active = !obj.active;
 }
 
@@ -79,17 +91,20 @@ Controller.prototype.timelineCurserMoved = function(obj){
 
 
 Controller.prototype.crossfadeCurserMoved = function(obj){
-	console.log("curser of "+obj.UIName+" was moved to pos "+ obj.getValue());
+	//console.log("curser of "+obj.UIName+" was moved to pos "+ obj.getValue());
+	this.engin.crossfade(obj.getValue());
 }
 
 
 Controller.prototype.knobValueChanged = function(obj){
 	console.log("Value of "+obj.UIName+" has changed to "+ obj.getValue());
+	this.engin.setNodeValue(obj.UIName, obj.getValue());
 }
 
 // called when user dragged an audio file on a deck
-Controller.prototype.startLoadingAudio = function(filename){
-	this.view.getUIElement("popoverText").textContent = "Loading track "+filename;
+Controller.prototype.startLoadingAudio = function(deck, file){
+	this.engin.loadAudio(deck, file, this.audioSourceChanged);
+	this.view.getUIElement("popoverText").textContent = "Loading track "+file.name;
 	this.view.getUIElement("popover").visible = true;
 	this.view.drawView();
 }
@@ -97,10 +112,13 @@ Controller.prototype.startLoadingAudio = function(filename){
 
 
 // Called when an audio path has been changed
-Controller.prototype.audioSourceChanged = function(deck, src, filename){
-	console.log(src);
-	this.view.getUIElement("popover").visible = false;
-	this.view.drawView();
+Controller.prototype.audioSourceChanged = function(deck, arrayBuffer, filename){
+	//console.log(src);
+	//console.log(deck);
+	MainController.view.getUIElement("bpmRight").textContent = " " + MainController.engin.BPMRight + "BPM";
+	MainController.view.getUIElement("bpmLeft").textContent = " " + MainController.engin.BPMLeft + "BPM";
+	MainController.view.getUIElement("popover").visible = false;
+	MainController.view.drawView();
 }
 
 
@@ -122,6 +140,15 @@ Controller.prototype.midiLearn = function(obj){
 
 }
 
+Controller.prototype.setVUMeterValue = function(element, value){
+	this.view.getUIElement(element).setValue(value);
+	this.view.drawView();
+};
+
+Controller.prototype.setBPM = function(element, value){
+	this.view.getUIElement(element).textContent = value + "BPM";
+	this.view.drawView();
+};
 
 ///////
 ///////
