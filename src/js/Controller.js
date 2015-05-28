@@ -74,12 +74,12 @@ Controller.prototype.btnClicked = function(obj){
 		this.engin.startStopRight();
 	} else if(obj.UIName == "syncLeft") {
 		this.engin.syncLeft();
-		this.view.getUIElement("bpmLeft").textContent = this.engin.BPMLeft + "BPM";
+		this.view.getUIElement("bpmLeft").textContent = this.engin.BPMLeft + " BPM";
 		var value = this.engin.source1.playbackRate.value * this.engin.BPMLeftOriginal / 300;
 		this.view.getUIElement("speedLeft").value = value;
 	} else if (obj.UIName == "syncRight") {
 		this.engin.syncRight();
-		this.view.getUIElement("bpmRight").textContent = this.engin.BPMRight + "BPM";
+		this.view.getUIElement("bpmRight").textContent = this.engin.BPMRight + " BPM";
 		var value = this.engin.source2.playbackRate.value * this.engin.BPMRightOriginal / 300;
 		this.view.getUIElement("speedRight").value = value;
 	}
@@ -108,6 +108,11 @@ Controller.prototype.knobValueChanged = function(obj){
 // called when user dragged an audio file on a deck
 Controller.prototype.startLoadingAudio = function(deck, file){
 	this.engin.loadAudio(deck, file, this.audioSourceChanged);
+	if (deck == "deckA") {
+		this.view.getUIElement("titleLeft").textContent = file.name;
+	} else if (deck == "deckB") {
+		this.view.getUIElement("titleRight").textContent = file.name;
+	}
 	this.view.getUIElement("popoverText").textContent = "Loading track "+file.name;
 	this.view.getUIElement("popover").visible = true;
 	this.view.drawView();
@@ -119,8 +124,8 @@ Controller.prototype.startLoadingAudio = function(deck, file){
 Controller.prototype.audioSourceChanged = function(deck, arrayBuffer, filename){
 	//console.log(src);
 	//console.log(deck);
-	MainController.view.getUIElement("bpmRight").textContent = " " + MainController.engin.BPMRight + "BPM";
-	MainController.view.getUIElement("bpmLeft").textContent = " " + MainController.engin.BPMLeft + "BPM";
+	MainController.view.getUIElement("bpmRight").textContent = " " + MainController.engin.BPMRight + " BPM";
+	MainController.view.getUIElement("bpmLeft").textContent = " " + MainController.engin.BPMLeft + " BPM";
 	MainController.view.getUIElement("popover").visible = false;
 	MainController.view.drawView();
 }
