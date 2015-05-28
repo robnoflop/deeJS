@@ -741,9 +741,6 @@ View.prototype.handleContext = function(event){
 	this.delegate.midiLearn(clickedObject);
 
 	this.drawView();
-
-
-
 }
 
 
@@ -1089,7 +1086,7 @@ function DJUIElementButton(name,x, y, width, height, active) {
 
   DJUIElement.call(this, name, x, y, width, height);
 
-  
+  this.UIType = "button";
   this.active = active || false;
   this.backgroundSec;
   this.receivesClickEvent = true;

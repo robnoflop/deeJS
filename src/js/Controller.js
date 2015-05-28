@@ -45,6 +45,11 @@ var Controller = function(){
 		learning: false,
 		obj: null
 	};
+
+	this.trackLoadedState = {
+		left: false,
+		right: false
+	};
 };
 
 
@@ -68,22 +73,60 @@ Controller.prototype.onloadView = function(){
 // called when a UIElement of type Button was clicked
 Controller.prototype.btnClicked = function(obj){
 	//console.log("Button clicked: "+obj.UIName);
-	if(obj.UIName == "playLeft" || obj.UIName == "stopLeft") {
+	if(obj.UIName == "playLeft" && obj.active) {
 		this.engin.startStopLeft();
-	} else if (obj.UIName == "playRight" || obj.UIName == "stopRight") {
+		obj.active = false;
+		this.view.getUIElement("stopLeft").active = true;
+
+	}else if(obj.UIName == "stopLeft" && obj.active){
+		this.engin.startStopLeft();
+		obj.active = false;
+		this.view.getUIElement("playLeft").active = true;
+
+	} else if(obj.UIName == "playRight" && obj.active) {
 		this.engin.startStopRight();
-	} else if(obj.UIName == "syncLeft") {
+		obj.active = false;
+		this.view.getUIElement("stopRight").active = true;
+
+	}else if(obj.UIName == "stopRight" && obj.active){
+		this.engin.startStopRight();
+		obj.active = false;
+		this.view.getUIElement("playRight").active = true;
+
+
+
+	} else if(
+			obj.UIName == "syncLeft" && 
+			obj.active && 
+			this.trackLoadedState.right &&
+			this.trackLoadedState.left) {
+
 		this.engin.syncLeft();
+		obj.active = false;
+		this.view.getUIElement("syncRight").active = true;
+
 		this.view.getUIElement("bpmLeft").textContent = this.engin.BPMLeft + " BPM";
 		var value = this.engin.source1.playbackRate.value * this.engin.BPMLeftOriginal / 300;
 		this.view.getUIElement("speedLeft").value = value;
-	} else if (obj.UIName == "syncRight") {
+
+
+	} else if (
+			obj.UIName == "syncRight" && 
+			obj.active && 
+			this.trackLoadedState.right &&
+			this.trackLoadedState.left) {
 		this.engin.syncRight();
+		obj.active = false;
+		this.view.getUIElement("syncLeft").active = true;
+
+
 		this.view.getUIElement("bpmRight").textContent = this.engin.BPMRight + " BPM";
 		var value = this.engin.source2.playbackRate.value * this.engin.BPMRightOriginal / 300;
 		this.view.getUIElement("speedRight").value = value;
 	}
-	obj.active = !obj.active;
+
+
+	this.view.drawView();
 }
 
 
@@ -96,7 +139,8 @@ Controller.prototype.timelineCurserMoved = function(obj){
 
 Controller.prototype.crossfadeCurserMoved = function(obj){
 	//console.log("curser of "+obj.UIName+" was moved to pos "+ obj.getValue());
-	this.engin.crossfade(obj.getValue());
+	// map from -1 .. 1 to 0..1
+	this.engin.crossfade((obj.getValue()+1)/2);
 }
 
 
@@ -108,10 +152,22 @@ Controller.prototype.knobValueChanged = function(obj){
 // called when user dragged an audio file on a deck
 Controller.prototype.startLoadingAudio = function(deck, file){
 	this.engin.loadAudio(deck, file, this.audioSourceChanged);
+
+	
+	
+
 	if (deck == "deckA") {
 		this.view.getUIElement("titleLeft").textContent = file.name;
+		this.view.getUIElement("artistLeft").textContent = "unkown";
+		this.view.getUIElement("playLeft").active = true;
+		this.view.getUIElement("stopLeft").active = false;
+		this.trackLoadedState.left = true;
 	} else if (deck == "deckB") {
 		this.view.getUIElement("titleRight").textContent = file.name;
+		this.view.getUIElement("artistRight").textContent = "unkown";
+		this.view.getUIElement("playRight").active = true;
+		this.view.getUIElement("stopRight").active = false;
+		this.trackLoadedState.right = true;
 	}
 	this.view.getUIElement("popoverText").textContent = "Loading track "+file.name;
 	this.view.getUIElement("popover").visible = true;
@@ -159,16 +215,13 @@ Controller.prototype.setBPM = function(element, value){
 	this.view.drawView();
 };
 
-///////
-///////
-/////// TODO by jens
-///////
-///////
-///////
+
 
 Controller.prototype.receivedMidi = function(midi){
 
 	var midiObj = MainController.midi;
+
+	console.log(midi.data);
 
 	// if in learn mode than 
 	if(MainController.midiLearnState.learning){
@@ -206,8 +259,21 @@ Controller.prototype.receivedMidi = function(midi){
 
 		console.log(midiObj.defaultMap);
 
-		if(UIElem.UIType == "knobneutral")
+		if(UIElem.UIType == "knobneutral"){
 			UIElem.setValue(midi.data[2]/127.0*2.0-1.0);
+			MainController.knobValueChanged(UIElem);
+		}else if (UIElem.UIType == "knobvolume"){
+			UIElem.setValue(midi.data[2]/127.0);
+			MainController.knobValueChanged(UIElem);
+		}else if (UIElem.UIType == "crossfade"){
+			UIElem.setValue(midi.data[2]/127.0*2-1);
+			MainController.crossfadeCurserMoved(UIElem);
+		}else if (UIElem.UIType == "button"){
+			//UIElem.active = UIElem.active;
+			MainController.btnClicked(UIElem);
+		}
+
+
 
 
 		MainController.view.drawView();
