@@ -1,10 +1,19 @@
+/**
+  @autor robnoflop
+  @version 1.0
+*/
+
+
+/**
+  Nach dem Beispiel von Boris Smus (http://www.html5rocks.com/en/tutorials/webaudio/intro/?redirect_from_locale=de)
+  Implementiert.
+*/
 function BufferLoader(context) {
   this.context = context;
   this.bufferList = new Array();
   this.bufferList[0] = null;
   this.bufferList[1] = null;
 
-  //not thread save
   this.callback = null;
   this.index = null;
 

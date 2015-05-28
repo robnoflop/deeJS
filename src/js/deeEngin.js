@@ -1,4 +1,7 @@
-
+/**
+  @autor robnoflop
+  @version 0.1
+*/
 function deeEngin(delegate) {
   this.delegate = delegate;
   // Fix up prefixing
@@ -114,12 +117,15 @@ deeEngin.prototype.connectAudioNodes = function() {
 deeEngin.prototype.startStopLeft = function(){
   if(this.leftPlaying) {
     this.source1.stop(0);
+    //save played time left
     this.source1StartOffset += this.context.currentTime - this.source1StartTime;
   } else {
+    //(re)strat buffer and (re)create left source
     this.source1StartTime = this.context.currentTime;
     this.source1 = this.context.createBufferSource();
     this.source1.connect(this.volLeft);
     this.source1.buffer = this.bufferLoader.bufferList[0];
+    //start with offset
     this.source1.start(0, this.source1StartOffset % this.source1.buffer.duration);
   }
   this.leftPlaying = !this.leftPlaying;
@@ -128,12 +134,15 @@ deeEngin.prototype.startStopLeft = function(){
 deeEngin.prototype.startStopRight = function(){
    if(this.rightPlaying) {
     this.source2.stop(0);
+    //save played time rigth
     this.source2StartOffset += this.context.currentTime - this.source2StartTime;
   } else {
+    //(re)strat buffer and (re)create right source 
     this.source2StartTime = this.context.currentTime;
     this.source2 = this.context.createBufferSource();
     this.source2.connect(this.volRight);
     this.source2.buffer = this.bufferLoader.bufferList[1];
+    //start with offset
     this.source2.start(0, this.source2StartOffset % this.source2.buffer.duration);
   }
   this.rightPlaying = !this.rightPlaying;
@@ -189,6 +198,7 @@ deeEngin.prototype.setNodeValue = function(name, value) {
 };
 
 deeEngin.prototype.crossfade = function(value){
+  //http://www.html5rocks.com/en/tutorials/webaudio/intro/?redirect_from_locale=de#toc-xfade
   this.crossfadeGain1.gain.value = Math.cos(value * 0.5*Math.PI);
   this.crossfadeGain2.gain.value = Math.cos((1.0 - value) * 0.5*Math.PI);
 };
@@ -204,6 +214,7 @@ deeEngin.prototype.loadAudio = function(deck, file, loadCallback){
 
 deeEngin.prototype.leftLoaded = function(){
     MainController.engin.source1.buffer = this.bufferList[0];
+    //count bpm for the new source
     MainController.engin.BPMLeft = parseInt(MainController.engin.bpmCounter.count(MainController.engin.source1.buffer.getChannelData(0), 0.15));
     MainController.engin.BPMLeftOriginal = MainController.engin.BPMLeft;
     MainController.engin.audioLoadCallback();
@@ -211,6 +222,7 @@ deeEngin.prototype.leftLoaded = function(){
 
 deeEngin.prototype.rightLoaded = function(){
     MainController.engin.source2.buffer = this.bufferList[1];
+    //count bpm for the new source
     MainController.engin.BPMRight = parseInt(MainController.engin.bpmCounter.count(MainController.engin.source2.buffer.getChannelData(0), 0.15));
     MainController.engin.BPMRightOriginal = MainController.engin.BPMRight;
     MainController.engin.audioLoadCallback();
@@ -218,13 +230,13 @@ deeEngin.prototype.rightLoaded = function(){
 
 
 deeEngin.prototype.syncLeft = function(argument){
-  source1.playbackRate.value = source1.playbackRate.value * BPMRight / BPMLeft;
-  BPMLeft = parseInt(BPMRight);
+  this.source1.playbackRate.value = this.source1.playbackRate.value * this.BPMRight / this.BPMLeft;
+  this.BPMLeft = parseInt(this.BPMRight);
 };
 
 deeEngin.prototype.syncRight = function(argument){
-  source2.playbackRate.value = source2.playbackRate.value * BPMLeft / BPMRight;
-  BPMRight = parseInt(BPMLeft);
+  this.source2.playbackRate.value = this.source2.playbackRate.value * this.BPMLeft / this.BPMRight;
+  this.BPMRight = parseInt(this.BPMLeft);
 };
 
 // shim layer with setTimeout fallback

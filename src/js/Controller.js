@@ -75,9 +75,13 @@ Controller.prototype.btnClicked = function(obj){
 	} else if(obj.UIName == "syncLeft") {
 		this.engin.syncLeft();
 		this.view.getUIElement("bpmLeft").textContent = this.engin.BPMLeft + "BPM";
+		var value = this.engin.source1.playbackRate.value * this.engin.BPMLeftOriginal / 300;
+		this.view.getUIElement("speedLeft").value = value;
 	} else if (obj.UIName == "syncRight") {
 		this.engin.syncRight();
 		this.view.getUIElement("bpmRight").textContent = this.engin.BPMRight + "BPM";
+		var value = this.engin.source2.playbackRate.value * this.engin.BPMRightOriginal / 300;
+		this.view.getUIElement("speedRight").value = value;
 	}
 	obj.active = !obj.active;
 }

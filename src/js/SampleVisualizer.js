@@ -1,3 +1,8 @@
+/**
+  @autor robnoflop
+  @version 0.1
+*/
+
 function SampleVisualizer(context, delegate, VUMeterName) {
   this.analyser = context.createAnalyser();
   this.analyser.minDecibels = -80;

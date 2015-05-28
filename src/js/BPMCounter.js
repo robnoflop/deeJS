@@ -1,7 +1,14 @@
+
+/**
+  Nach dem Beispiel von Joe Sullivan (http://tech.beatport.com/2014/web-audio/beat-detection-using-web-audio/) implementiert.
+*/
 function BPMCounter() {
 
 }
 
+/**
+  Count the BPM for geiven source. 
+*/
 BPMCounter.prototype.count = function(source, threshold){
   var peaks = this.getPeaksAtThreshold(source, threshold);
   var intervals = this.countIntervalsBetweenNearbyPeaks(peaks);
